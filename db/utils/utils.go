@@ -7,12 +7,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func ConvStringToInt(r *http.Request) int64 {
+func ConvStringToInt(r *http.Request) (int64, error) {
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
-		panic(err)
+		return 0, err
 	}
 
-	return id
+	return id, nil
 }
