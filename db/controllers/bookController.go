@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/henriquemoreiraa/Gophercises/models"
@@ -14,9 +15,12 @@ func GetBooks(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetBook(w http.ResponseWriter, r *http.Request) {
-	id := utils.ConvStringToInt(r)
+	id, err := utils.ConvStringToInt(r)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	book := models.GetBook(id)	
+	book := models.GetBook(id)
 	writeResponse(w, book)
 }
 
@@ -26,20 +30,26 @@ func CreateBook(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateBook(w http.ResponseWriter, r *http.Request) {
-	id := utils.ConvStringToInt(r)
+	id, err := utils.ConvStringToInt(r)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	book := models.UpdateBook(r, id)
 	writeResponse(w, book)
 }
 
 func DeleteBook(w http.ResponseWriter, r *http.Request) {
-	id := utils.ConvStringToInt(r)
+	id, err := utils.ConvStringToInt(r)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	book := models.DeleteBook(id)
 	writeResponse(w, book)
 }
 
-func writeResponse[B BookConst](w http.ResponseWriter, b B ) {
+func writeResponse[B BookConst](w http.ResponseWriter, b B) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(b)
