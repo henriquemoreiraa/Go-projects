@@ -20,12 +20,20 @@ func GetBook(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	book := models.GetBook(id)
+	book, err := models.GetBook(id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	writeResponse(w, book)
 }
 
 func CreateBook(w http.ResponseWriter, r *http.Request) {
-	createBook := models.CreateBook(r)
+	createBook, err := models.CreateBook(r)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	writeResponse(w, createBook)
 }
 
@@ -35,7 +43,11 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	book := models.UpdateBook(r, id)
+	book, err := models.UpdateBook(r, id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	writeResponse(w, book)
 }
 
@@ -45,7 +57,11 @@ func DeleteBook(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	book := models.DeleteBook(id)
+	book, err := models.DeleteBook(id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	writeResponse(w, book)
 }
 

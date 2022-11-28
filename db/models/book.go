@@ -10,10 +10,10 @@ import (
 
 type Book struct {
 	gorm.Model
-	Title string	`json:"title"`
-	Description string	`json:"description"`
-	Author string	`json:"author"`
-	Pages int	`json:"pages"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Author      string `json:"author"`
+	Pages       int    `json:"pages"`
 }
 
 var db *gorm.DB
@@ -30,33 +30,47 @@ func GetBooks() []Book {
 	return books
 }
 
-func GetBook(Id int64) Book {
+func GetBook(Id int64) (Book, error) {
 	var book Book
-	db.Where("ID=?", Id).Find(&book)
+	err := db.Where("ID=?", Id).Find(&book).Error
+	if err != nil {
+		return book, err
+	}
 
-	return book
+	return book, nil
 }
 
-func CreateBook(r *http.Request) Book {
+func CreateBook(r *http.Request) (Book, error) {
 	var book Book
 	json.NewDecoder(r.Body).Decode(&book)
-	db.Create(&book)
 
-	return book
+	err := db.Create(&book).Error
+	if err != nil {
+		return book, err
+	}
+
+	return book, nil
 }
 
-func UpdateBook(r *http.Request, Id int64) Book {
+func UpdateBook(r *http.Request, Id int64) (Book, error) {
 	var book Book
 	db := db.Where("ID=?", Id).Find(&book)
-	json.NewDecoder(r.Body).Decode(&book)	
-	db.Save(&book)
+	json.NewDecoder(r.Body).Decode(&book)
 
-	return book
+	err := db.Save(&book).Error
+	if err != nil {
+		return book, err
+	}
+
+	return book, nil
 }
 
-func DeleteBook(Id int64) Book {
+func DeleteBook(Id int64) (Book, error) {
 	var book Book
-	db.Where("ID=?", Id).Delete(&book)
+	err := db.Where("ID=?", Id).Delete(&book).Error
+	if err != nil {
+		return book, err
+	}
 
-	return book
+	return book, nil
 }
