@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,54 +14,70 @@ func init() {
 	Init()
 }
 
+func TestGetBooksEmpty(t *testing.T) {
+	clearTable()
+
+	r := mux.NewRouter()
+	r.HandleFunc("/books", GetBooksController)
+
+	res := executeRequest(t, r, nil, "/books", "GET")
+	checkResponse(t, http.StatusOK, res.Code)
+
+	if body := res.Body.String(); len(body) != 3 {
+		t.Errorf("Expected empty array. Got %s", body)
+	}
+}
+
+func TestCreateBook(t *testing.T) {
+	book := RequestBodyTest(t)
+
+	r := mux.NewRouter()
+	r.HandleFunc("/book/create", CreateBookController)
+	
+	res := executeRequest(t, r, bytes.NewReader(book), "/book/create", "POST")
+	checkResponse(t, http.StatusOK, res.Code)
+}
+
 func TestGetBooks(t *testing.T) {
 	r := mux.NewRouter()
 	r.HandleFunc("/books", GetBooksController)
-	req, _ := http.NewRequest("GET", "/books", nil)
 
-	res := executeRequest(req, r)
+	res := executeRequest(t, r, nil, "/books", "GET")
 	checkResponse(t, http.StatusOK, res.Code)
 
-	if body := res.Body.String(); body == "[]" {
+	if body := res.Body.String(); len(body) == 3 {
 		t.Errorf("Expected some data. Got %s", body)
 	}
 }
 
 func TestGetBook(t *testing.T) {
-	if _, err := GetBook(1); err == nil {
-		t.Error("test failed")
-	}
-}
-func TestCreateBook(t *testing.T) {
-	book, err := RequestBodyTest()
-	if err != nil {
-		t.Error(err)
-	}
+	r := mux.NewRouter()
+	r.HandleFunc("/book/{id}", GetBooksController)
 
-	r, _ := http.NewRequest("POST", "/book/create", bytes.NewReader(book))
+	res := executeRequest(t, r, nil, "/book/1", "GET")
+	checkResponse(t, http.StatusOK, res.Code)
 
-	if _, err := CreateBook(r); err != nil {
-		t.Error("test failed")
+	if body := res.Body.String(); len(body) == 3 {
+		t.Errorf("Expected some data. Got %s", body)
 	}
 }
 
 func TestUpdateBook(t *testing.T) {
-	book, err := RequestBodyTest()
-	if err != nil {
-		t.Error(err)
-	}
+	book := RequestBodyTest(t)
 
-	r, _ := http.NewRequest("POST", "/book/create", bytes.NewReader(book))
-
-	if _, err := UpdateBook(r, 2); err != nil {
-		t.Error("test failed")
-	}
+	r := mux.NewRouter()
+	r.HandleFunc("/book/update/{id}", UpdateBookController)
+	
+	res := executeRequest(t, r, bytes.NewReader(book), "/book/update/1", "PUT")
+	checkResponse(t, http.StatusOK, res.Code)
 }
 
 func TestDeleteBook(t *testing.T) {
-	if _, err := DeleteBook(2); err != nil {
-		t.Error("test failed")
-	}
+	r := mux.NewRouter()
+	r.HandleFunc("/book/delete/{id}", DeleteBookController)
+	
+	res := executeRequest(t, r, nil, "/book/delete/1", "DELETE")
+	checkResponse(t, http.StatusOK, res.Code)
 }
 
 func checkResponse(t *testing.T, expected, actual int) {
@@ -69,24 +86,31 @@ func checkResponse(t *testing.T, expected, actual int) {
 	}
 }
 
-func RequestBodyTest() ([]byte, error) {
+func executeRequest(t *testing.T, r *mux.Router, body io.Reader, route, method string) *httptest.ResponseRecorder {
+
+	req, err := http.NewRequest(method, route, body)
+	if err != nil {
+		t.Error(err)
+	}
+
+	res := httptest.NewRecorder()
+	r.ServeHTTP(res, req)
+
+	return res
+}
+
+func RequestBodyTest(t *testing.T) []byte {
 	book := Book{Title: "test", Description: "test", Author: "test", Pages: 1}
 
 	j, err := json.Marshal(book)
 	if err != nil {
-		return nil, err
+		t.Error(err)
 	}
 
-	return j, nil
+	return j
 }
 
-func executeRequest(req *http.Request, r *mux.Router) *httptest.ResponseRecorder {
-	rr := httptest.NewRecorder()
-	r.ServeHTTP(rr, req)
-
-	return rr
+func clearTable() {
+	db.Exec("DELETE FROM books")
+	db.Exec("ALTER SEQUENCE books_id_seq RESTART WITH 1")
 }
-
-// func clearTable() {
-// 	db.Exec("DELETE FROM books")
-// }
