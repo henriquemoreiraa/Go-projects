@@ -1,26 +1,25 @@
-package controllers
+package models
 
 import (
 	"encoding/json"
 	"log"
 	"net/http"
 
-	"github.com/henriquemoreiraa/Gophercises/models"
 	"github.com/henriquemoreiraa/Gophercises/utils"
 )
 
-func GetBooks(w http.ResponseWriter, r *http.Request) {
-	books := models.GetBooks()
+func GetBooksController(w http.ResponseWriter, r *http.Request) {
+	books := GetBooks()
 	writeResponse(w, books)
 }
 
-func GetBook(w http.ResponseWriter, r *http.Request) {
+func GetBookController(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.ConvStringToInt(r)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	book, err := models.GetBook(id)
+	book, err := GetBook(id)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,8 +27,8 @@ func GetBook(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, book)
 }
 
-func CreateBook(w http.ResponseWriter, r *http.Request) {
-	createBook, err := models.CreateBook(r)
+func CreateBookController(w http.ResponseWriter, r *http.Request) {
+	createBook, err := CreateBook(r)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,13 +36,13 @@ func CreateBook(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, createBook)
 }
 
-func UpdateBook(w http.ResponseWriter, r *http.Request) {
+func UpdateBookController(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.ConvStringToInt(r)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	book, err := models.UpdateBook(r, id)
+	book, err := UpdateBook(r, id)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,13 +50,13 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, book)
 }
 
-func DeleteBook(w http.ResponseWriter, r *http.Request) {
+func DeleteBookController(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.ConvStringToInt(r)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	book, err := models.DeleteBook(id)
+	book, err := DeleteBook(id)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -72,5 +71,5 @@ func writeResponse[B BookConst](w http.ResponseWriter, b B) {
 }
 
 type BookConst interface {
-	models.Book | []models.Book
+	Book | []Book
 }

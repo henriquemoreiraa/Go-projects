@@ -2,13 +2,13 @@ package routes
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/henriquemoreiraa/Gophercises/controllers"
+	"github.com/henriquemoreiraa/Gophercises/models"
 )
 
 func Routes(r *mux.Router) {
-	r.HandleFunc("/books", controllers.GetBooks).Methods("GET")
-	r.HandleFunc("/book/{id}", controllers.GetBook).Methods("GET")
-	r.HandleFunc("/book/create", controllers.CreateBook).Methods("POST")
-	r.HandleFunc("/book/update/{id}", controllers.UpdateBook).Methods("PUT")
-	r.HandleFunc("/book/delete/{id}", controllers.DeleteBook).Methods("DELETE")
+	r.HandleFunc("/books", models.GetBooksController).Methods("GET")
+	r.HandleFunc("/book/{id}", models.GetBookController).Methods("GET")
+	r.HandleFunc("/book/create", models.CreateBookController).Methods("POST")
+	r.HandleFunc("/book/update/{id}", models.UpdateBookController).Methods("PUT")
+	r.HandleFunc("/book/delete/{id}", models.DeleteBookController).Methods("DELETE")
 }

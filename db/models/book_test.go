@@ -4,17 +4,30 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"net/http/httptest"
 	"testing"
+
+	"github.com/gorilla/mux"
 )
+func init() {
+	Init()
+}
 
 func TestGetBooks(t *testing.T) {
-	if res := GetBooks(); res == nil {
-		t.Error("test failed")
+	r := mux.NewRouter()
+	r.HandleFunc("/books", GetBooksController)
+	req, _ := http.NewRequest("GET", "/books", nil)
+
+	res := executeRequest(req, r)
+	checkResponse(t, http.StatusOK, res.Code)
+
+	if body := res.Body.String(); body == "[]" {
+		t.Errorf("Expected some data. Got %s", body)
 	}
 }
 
 func TestGetBook(t *testing.T) {
-	if _, err := GetBook(1); err != nil {
+	if _, err := GetBook(1); err == nil {
 		t.Error("test failed")
 	}
 }
@@ -50,6 +63,12 @@ func TestDeleteBook(t *testing.T) {
 	}
 }
 
+func checkResponse(t *testing.T, expected, actual int) {
+	if expected != actual {
+		t.Errorf("Expected response code %d. Got %d\n", expected, actual)
+	}
+}
+
 func RequestBodyTest() ([]byte, error) {
 	book := Book{Title: "test", Description: "test", Author: "test", Pages: 1}
 
@@ -60,3 +79,14 @@ func RequestBodyTest() ([]byte, error) {
 
 	return j, nil
 }
+
+func executeRequest(req *http.Request, r *mux.Router) *httptest.ResponseRecorder {
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	return rr
+}
+
+// func clearTable() {
+// 	db.Exec("DELETE FROM books")
+// }
